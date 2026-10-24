@@ -1,0 +1,880 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIRPORT ANCHOR | Passenger Assistance Prototype</title>
+<style>
+:root {
+  --bg:#f3f6fb; --panel:#fff; --ink:#17243a; --muted:#75839a;
+  --blue:#245bd5; --blue-light:#eaf0ff; --green:#148461;
+  --red:#c44848; --amber:#a66b10; --border:#e3e9f2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:238px 1fr}
+.sidebar{background:#101c31;color:white;padding:25px 17px;display:flex;
+  flex-direction:column;gap:24px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 8px}
+.brand-icon{width:39px;height:39px;border-radius:12px;background:#3268e5;
+  display:grid;place-items:center;font-size:21px}
+.brand h1{font-size:16px;margin:0;letter-spacing:.6px}
+.brand p{font-size:10px;color:#93a6c4;margin:4px 0 0;letter-spacing:1.4px}
+.nav-label{font-size:10px;color:#7e90ac;letter-spacing:1.5px;
+  padding:0 10px;margin-bottom:7px}
+.nav{border:0;background:transparent;color:#aebbd0;width:100%;
+  padding:12px 11px;text-align:left;border-radius:9px;font-size:13px;
+  display:flex;gap:11px;align-items:center;margin:3px 0}
+.nav:hover,.nav.active{background:#213450;color:white}
+.nav.active{box-shadow:inset 3px 0 #6593ff}
+.nav .ico{width:19px;text-align:center}
+.sidebar-bottom{margin-top:auto;border:1px solid #2c3c55;border-radius:11px;
+  padding:13px;font-size:11px;line-height:1.7;color:#aebbd0}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#30c394;margin-right:6px}
+main{min-width:0;padding:28px clamp(16px,3vw,38px) 40px}
+.topbar{display:flex;justify-content:space-between;align-items:center;
+  gap:15px;margin-bottom:25px}
+.eyebrow{color:var(--blue);font-size:10px;font-weight:800;letter-spacing:1.7px}
+h2{font-size:27px;letter-spacing:-.8px;margin:7px 0}
+.sub{color:var(--muted);font-size:13px;line-height:1.6}
+.top-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pill{border-radius:30px;padding:8px 12px;background:#fff;
+  border:1px solid var(--border);font-size:11px;color:#52637c}
+.button{border:0;border-radius:9px;padding:10px 14px;
+  font-size:12px;font-weight:650;background:var(--blue);color:white}
+.button:hover{filter:brightness(.95)}
+.button.secondary{background:#fff;border:1px solid var(--border);color:var(--ink)}
+.button.green{background:var(--green)}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,.85fr);
+  gap:18px;align-items:start}
+.stack{display:grid;gap:18px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--border);
+  border-radius:15px;padding:20px;min-width:0;
+  box-shadow:0 3px 12px #1b335508}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;margin-bottom:16px}
+.card h3{font-size:14px;margin:0 0 5px}
+.card-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.tag{font-size:10px;padding:5px 8px;border-radius:6px;white-space:nowrap;
+  background:#f0f3f8;color:#64748b}
+.tag.live{background:#e4f7ef;color:#167b5a}
+.tag.offline{background:#fff1dd;color:#94600c}
+.map{
+  height:330px;position:relative;overflow:hidden;border-radius:11px;
+  background:#edf2f7;border:1px solid #e0e7ef;
+}
+.map svg{width:100%;height:100%;display:block}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:13px;
+  color:var(--muted);font-size:10px}
+.legend-dot{display:inline-block;width:8px;height:8px;border-radius:3px;
+  margin-right:5px}
+.map-note{font-size:11px;color:#586983;background:#f6f8fb;
+  border-radius:8px;padding:10px;margin-top:12px;line-height:1.6}
+.route{stroke:#3474e8;stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:8 7;fill:none;animation:dash 1.3s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-30}}
+.map-label{font-size:11px;font-weight:650;fill:#42516a}
+.map-small{font-size:9px;fill:#74839a}
+.map-pin{cursor:pointer}
+.task-list{display:grid;gap:9px}
+.task{display:flex;align-items:center;gap:12px;border:1px solid var(--border);
+  border-radius:10px;padding:12px;background:#fff;text-align:left;width:100%;
+  color:var(--ink)}
+.task:hover{border-color:#9ab8f9;background:#fafcff}
+.task.selected{border-color:var(--blue);background:#f5f8ff}
+.task-icon{height:38px;width:38px;display:grid;place-items:center;
+  border-radius:10px;background:var(--blue-light);font-size:18px;flex-shrink:0}
+.task-copy{flex:1;min-width:0}
+.task-copy strong{display:block;font-size:12px;margin-bottom:4px}
+.task-copy span{font-size:10px;color:var(--muted)}
+.task-arrow{color:#8b9ab0}
+.info-box{border-radius:10px;padding:14px;background:#f4f7ff;
+  border:1px solid #dfe8ff;margin-top:14px}
+.info-box h4{margin:0 0 7px;font-size:12px}
+.info-box p{font-size:11px;color:#596b85;line-height:1.7;margin:0}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.notice{padding:13px;border:1px solid #f2dfb7;background:#fffaf0;
+  border-radius:10px;margin-bottom:10px}
+.notice h4{font-size:12px;margin:0 0 6px}
+.notice p{font-size:11px;line-height:1.6;color:#6d624d;margin:0}
+.notice .tag{display:inline-block;margin-bottom:8px}
+.carousel-number{font-size:29px;font-weight:750;letter-spacing:-1px}
+.big-metric{font-size:25px;font-weight:750;letter-spacing:-1px}
+.metric-label{font-size:10px;color:var(--muted);margin-top:5px}
+.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.metric{border:1px solid var(--border);border-radius:10px;padding:13px}
+.metric small{display:block;color:var(--muted);font-size:10px;margin-bottom:9px}
+.metric strong{font-size:22px}
+.metric em{display:block;color:var(--muted);font-size:10px;
+  font-style:normal;margin-top:5px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.progress{height:6px;background:#e8edf5;border-radius:10px;overflow:hidden}
+.progress div{height:100%;width:0;background:var(--blue);transition:width .2s}
+.muted{color:var(--muted)}
+.small{font-size:10px;line-height:1.7}
+.field{display:grid;gap:7px;margin:13px 0}
+.field label{font-size:11px;color:#5e6d82}
+.field input{border:1px solid var(--border);padding:10px;border-radius:8px;
+  width:100%;color:var(--ink);background:white}
+.field select{border:1px solid var(--border);padding:10px;border-radius:8px;
+  width:100%;background:white;color:var(--ink)}
+.result-row{display:flex;justify-content:space-between;gap:12px;
+  font-size:11px;padding:11px 0;border-bottom:1px solid #edf0f5}
+.result-row:last-child{border-bottom:0}
+.result-value{font-weight:700}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:#14243b;color:white;padding:12px 18px;border-radius:10px;
+  font-size:12px;box-shadow:0 10px 30px #0002;z-index:10;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.page{display:none}
+.page.active{display:block}
+.footer-note{font-size:10px;color:var(--muted);line-height:1.7;margin-top:16px}
+@media(max-width:1000px){
+ .app{grid-template-columns:72px 1fr}
+ .sidebar{padding:22px 9px}
+ .brand{padding:0;justify-content:center}
+ .brand-copy,.nav-label,.nav-text,.sidebar-bottom{display:none}
+ .nav{justify-content:center;padding:13px 5px}
+ .nav .ico{width:auto;font-size:17px}
+ .grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .app{grid-template-columns:1fr}
+ .sidebar{position:sticky;top:0;z-index:5;flex-direction:row;
+   padding:8px;gap:5px;justify-content:space-around}
+ .brand{display:none}
+ .sidebar nav{display:flex;flex:1;justify-content:space-around}
+ .nav{margin:0;flex:1;padding:10px 2px;font-size:10px}
+ .nav .ico{font-size:16px}
+ main{padding:20px 12px 30px}
+ .topbar{align-items:flex-start;flex-direction:column}
+ h2{font-size:23px}
+ .map{height:280px}
+ .metric-grid{grid-template-columns:1fr 1fr}
+ .card{padding:15px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">✈</div>
+      <div class="brand-copy">
+        <h1>AIRPORT ANCHOR</h1>
+        <p>PASSENGER ASSISTANCE</p>
+      </div>
+    </div>
+
+    <nav>
+      <div class="nav-label">WORKSPACE</div>
+      <button class="nav active" data-page="passenger"><span class="ico">⌂</span><span class="nav-text">Passenger app</span></button>
+      <button class="nav" data-page="testing"><span class="ico">◎</span><span class="nav-text">Usability testing</span></button>
+      <button class="nav" data-page="feasibility"><span class="ico">▤</span><span class="nav-text">Feasibility</span></button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <span class="dot"></span> Concept prototype<br>
+      Demonstration data only<br>
+      No live airport connection
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">AIRPORT ANCHOR / PROJECT DEMO</div>
+        <h2 id="pageTitle">Your airport, made clearer.</h2>
+        <div class="sub" id="pageSubtitle">A passenger-facing prototype for directions, baggage information and assistance.</div>
+      </div>
+      <div class="top-actions">
+        <span class="pill">Terminal A · Example data</span>
+        <button class="button secondary" id="resetAll">Reset demo</button>
+      </div>
+    </div>
+
+    <!-- PASSENGER EXPERIENCE -->
+    <section class="page active" id="passenger">
+      <div class="grid">
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Terminal navigation</h3>
+                <div class="card-desc">Select a task to see a suggested route through the schematic terminal.</div>
+              </div>
+              <span class="tag">SCHEMATIC MAP</span>
+            </div>
+
+            <div class="map">
+              <svg viewBox="0 0 620 330" role="img" aria-label="Schematic airport terminal map">
+                <defs>
+                  <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="#d7e0eb"/>
+                  </pattern>
+                </defs>
+                <rect width="620" height="330" fill="url(#dots)"/>
+                <!-- terminal structure -->
+                <rect x="45" y="45" width="530" height="242" rx="18" fill="#fff" stroke="#d8e1ec" stroke-width="2"/>
+                <rect x="68" y="65" width="484" height="200" rx="12" fill="#f4f7fb" stroke="#e2e8f0"/>
+                <!-- main corridor -->
+                <rect x="86" y="137" width="448" height="54" rx="10" fill="#e6edf5"/>
+                <text x="310" y="168" text-anchor="middle" class="map-label">MAIN WALKWAY</text>
+                <!-- gate areas -->
+                <g>
+                  <rect x="93" y="82" width="91" height="43" rx="7" fill="#dfeaff" stroke="#b5cdfd"/>
+                  <text x="138" y="99" text-anchor="middle" class="map-small">GATE</text>
+                  <text x="138" y="114" text-anchor="middle" class="map-label">A12</text>
+                  <rect x="214" y="82" width="91" height="43" rx="7" fill="#dfeaff" stroke="#b5cdfd"/>
+                  <text x="259" y="99" text-anchor="middle" class="map-small">GATE</text>
+                  <text x="259" y="114" text-anchor="middle" class="map-label">A14</text>
+                  <rect x="335" y="82" width="91" height="43" rx="7" fill="#dfeaff" stroke="#b5cdfd"/>
+                  <text x="380" y="99" text-anchor="middle" class="map-small">GATE</text>
+                  <text x="380" y="114" text-anchor="middle" class="map-label">A16</text>
+                  <rect x="456" y="82" width="76" height="43" rx="7" fill="#dfeaff" stroke="#b5cdfd"/>
+                  <text x="494" y="99" text-anchor="middle" class="map-small">GATE</text>
+                  <text x="494" y="114" text-anchor="middle" class="map-label">A18</text>
+                </g>
+                <!-- baggage -->
+                <rect x="95" y="209" width="128" height="37" rx="7" fill="#dff5ed" stroke="#a8dfcd"/>
+                <text x="159" y="224" text-anchor="middle" class="map-small">BAGGAGE</text>
+                <text x="159" y="237" text-anchor="middle" class="map-label">Carousel 3</text>
+                <!-- help -->
+                <rect x="264" y="209" width="109" height="37" rx="7" fill="#fff0d7" stroke="#f1d29a"/>
+                <text x="318" y="224" text-anchor="middle" class="map-small">ASSISTANCE</text>
+                <text x="318" y="237" text-anchor="middle" class="map-label">Help Point</text>
+                <!-- entrance -->
+                <rect x="423" y="209" width="109" height="37" rx="7" fill="#e8e5ff" stroke="#c9c2fa"/>
+                <text x="477" y="224" text-anchor="middle" class="map-small">ENTRANCE</text>
+                <text x="477" y="237" text-anchor="middle" class="map-label">Check-in</text>
+                <!-- route overlays -->
+                <path id="routePath" class="route" d="" style="display:none"/>
+                <g id="mapMarker" style="display:none">
+                  <circle id="markerHalo" cx="138" cy="103" r="15" fill="#3474e8" opacity=".15"/>
+                  <circle id="markerDot" cx="138" cy="103" r="6" fill="#3474e8" stroke="#fff" stroke-width="2"/>
+                </g>
+                <text x="60" y="25" class="map-small">TERMINAL A · NOT TO SCALE</text>
+                <text x="550" y="309" text-anchor="end" class="map-small">Illustrative layout</text>
+              </svg>
+            </div>
+            <div class="map-legend">
+              <span><i class="legend-dot" style="background:#3474e8"></i>Route</span>
+              <span><i class="legend-dot" style="background:#a8dfcd"></i>Baggage</span>
+              <span><i class="legend-dot" style="background:#f1d29a"></i>Help point</span>
+              <span><i class="legend-dot" style="background:#b5cdfd"></i>Gates</span>
+            </div>
+            <div class="map-note" id="routeDescription">Choose one of the passenger tasks below to display its destination and route.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Passenger tasks</h3>
+                <div class="card-desc">These tasks form the proposed usability test.</div>
+              </div>
+              <span class="tag" id="taskCount">0 / 4 complete</span>
+            </div>
+            <div class="task-list">
+              <button class="task" data-task="gate">
+                <span class="task-icon">↗</span>
+                <span class="task-copy"><strong>Find your new departure gate</strong><span>Gate change · A12 to A16</span></span>
+                <span class="task-arrow">›</span>
+              </button>
+              <button class="task" data-task="baggage">
+                <span class="task-icon">▣</span>
+                <span class="task-copy"><strong>Find the correct baggage carousel</strong><span>Arrival information · Carousel 3</span></span>
+                <span class="task-arrow">›</span>
+              </button>
+              <button class="task" data-task="tag">
+                <span class="task-icon">⌁</span>
+                <span class="task-copy"><strong>Understand your luggage tag</strong><span>Purpose and baggage identification</span></span>
+                <span class="task-arrow">›</span>
+              </button>
+              <button class="task" data-task="help">
+                <span class="task-icon">＋</span>
+                <span class="task-copy"><strong>Locate the appropriate help point</strong><span>Find assistance in the terminal</span></span>
+                <span class="task-arrow">›</span>
+              </button>
+            </div>
+            <div class="info-box" id="taskInfo">
+              <h4>Start with a passenger task</h4>
+              <p>Select any task above. The prototype will display the relevant information and, where appropriate, a suggested route.</p>
+            </div>
+            <div class="action-row">
+              <button class="button" id="startTask" disabled>Start task</button>
+              <button class="button green" id="completeTask" disabled>Mark understood</button>
+              <button class="button secondary" id="clearTask">Clear selection</button>
+            </div>
+            <p class="small muted" id="taskFeedback">Task completion here is a demonstration interaction, not evidence from an independent user test.</p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Flight update</h3>
+                <div class="card-desc">Example notification shown to a passenger.</div>
+              </div>
+              <span class="tag live" id="flightStatus">DEMO UPDATE</span>
+            </div>
+            <div class="notice">
+              <span class="tag">GATE CHANGE</span>
+              <h4 id="gateHeadline">Your departure gate has changed</h4>
+              <p id="gateMessage">Flight AX204 · Gate A12 → Gate A16. Please check the airport displays before proceeding.</p>
+            </div>
+            <div class="field">
+              <label>Information status</label>
+              <select id="infoStatus">
+                <option value="live">Live / verified (demonstration)</option>
+                <option value="unavailable">Currently unavailable</option>
+              </select>
+            </div>
+            <div class="info-box" id="statusExplanation">
+              <h4>Live / verified information</h4>
+              <p>The interface presents a timestamp and source status. In a real deployment, the status would depend on an authorised, current data feed.</p>
+            </div>
+            <p class="small muted">The status selector is a concept demonstration. It does not verify actual flight information.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Baggage identification</h3>
+                <div class="card-desc">Explain what a luggage tag does.</div>
+              </div>
+              <span class="tag">GUIDANCE</span>
+            </div>
+            <div style="background:#f4f7fb;border:1px solid #e3e9f2;border-radius:10px;padding:17px;display:flex;gap:14px;align-items:center">
+              <div style="background:white;border:1px solid #cbd5e1;border-radius:7px;padding:10px;width:92px;flex-shrink:0;text-align:center">
+                <div style="font-size:9px;letter-spacing:1px;font-weight:800">BAG TAG</div>
+                <div style="font-size:19px;letter-spacing:2px;margin:6px 0">▥▥▥</div>
+                <div style="font-size:9px">AX 204</div>
+                <div style="font-size:9px;color:#64748b">BOM → DEL</div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;margin-bottom:5px">Keep your baggage receipt</div>
+                <div class="small muted">The airline tag helps identify and route checked baggage. Its receipt or tag number can help the airline trace a bag.</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="result-row"><span>Identifies checked baggage</span><span class="result-value">Yes</span></div>
+            <div class="result-row"><span>Helps trace delayed baggage</span><span class="result-value">Yes</span></div>
+            <div class="result-row"><span>Guarantees bag contents or ownership</span><span class="result-value">No</span></div>
+            <p class="small muted">Illustrative tag only. Do not enter real passenger or booking details.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Arrival baggage</h3>
+                <div class="card-desc">Example arrival information.</div>
+              </div>
+              <span class="tag live" id="carouselStatus">DEMO DATA</span>
+            </div>
+            <div class="small muted">FLIGHT AX204 · ARRIVAL</div>
+            <div class="carousel-number" style="margin-top:5px">Carousel 03</div>
+            <div class="sub" id="carouselMessage">Proceed to baggage reclaim and check the official airport screens.</div>
+            <div class="action-row">
+              <button class="button secondary" id="toggleCarousel">Simulate unavailable data</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Find assistance</h3>
+                <div class="card-desc">Help point and accessible assistance concept.</div>
+              </div>
+              <span class="tag">SUPPORT</span>
+            </div>
+            <p class="small" style="line-height:1.8;color:#596b85">
+              Help points should be visible on the terminal map and clearly identified with text and icons. A deployed service should also provide step-free routes where available and allow passengers to request appropriate assistance.
+            </p>
+            <button class="button secondary full" id="findHelp">Show help point on map</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USABILITY TESTING -->
+    <section class="page" id="testing">
+      <div class="stack">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Usability evaluation plan</h3>
+              <div class="card-desc">Proposed evaluation with at least 20 probable users.</div>
+            </div>
+            <span class="tag">TEST PROTOCOL</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><small>Target participants</small><strong>20</strong><em>Minimum proposed sample</em></div>
+            <div class="metric"><small>Task scenarios</small><strong>4</strong><em>Gate, baggage, tag, help</em></div>
+            <div class="metric"><small>Actual sessions recorded</small><strong id="sessionCount">0</strong><em>In this browser session</em></div>
+          </div>
+          <div class="divider"></div>
+          <h3 style="margin-bottom:12px">Participant task checklist</h3>
+          <p class="card-desc" style="margin-bottom:15px">Use this protocol with each participant. Do not coach the participant while measuring unaided task performance. Record assistance separately.</p>
+          <div id="protocolList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Observed session log</h3>
+              <div class="card-desc">Records task outcomes and elapsed time from interactions in this prototype.</div>
+            </div>
+            <button class="button secondary" id="exportCsv">Export CSV</button>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><small>Tasks attempted</small><strong id="attemptedMetric">0</strong><em>Current session</em></div>
+            <div class="metric"><small>Tasks marked understood</small><strong id="passedMetric">0</strong><em>Self-marked, not independently verified</em></div>
+            <div class="metric"><small>Mean task time</small><strong id="timeMetric">—</strong><em>Among completed interactions</em></div>
+          </div>
+          <div class="divider"></div>
+          <div id="sessionLog">
+            <p class="small muted">No task interactions recorded yet. Start tasks in the Passenger app to populate this log.</p>
+          </div>
+          <div class="footer-note">These are local prototype interaction records, not validated usability findings. A real study should record participant IDs using anonymous codes, task success criteria, assistance required, timing, and participant feedback.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Post-task feedback</h3>
+              <div class="card-desc">Example questions for each participant after the tasks.</div>
+            </div>
+            <span class="tag">QUESTIONNAIRE</span>
+          </div>
+          <div id="questions"></div>
+          <div class="field">
+            <label for="feedbackText">Anonymous qualitative observation</label>
+            <input id="feedbackText" placeholder="e.g. Participant could not distinguish gate from carousel">
+          </div>
+          <div class="field">
+            <label for="feedbackTask">Related task</label>
+            <select id="feedbackTask">
+              <option>Gate change</option><option>Baggage carousel</option>
+              <option>Luggage tag</option><option>Help point</option>
+              <option>Information status</option><option>Accessibility</option>
+            </select>
+          </div>
+          <button class="button" id="saveFeedback">Save observation</button>
+          <div id="feedbackLog" class="small muted" style="margin-top:12px">No observations recorded.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEASIBILITY -->
+    <section class="page" id="feasibility">
+      <div class="stack">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Implementation feasibility</h3>
+              <div class="card-desc">Key dependencies and conditions for a real airport deployment.</div>
+            </div>
+            <span class="tag">CONCEPT REVIEW</span>
+          </div>
+          <div id="feasibilityItems"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Risk and mitigation register</h3>
+              <div class="card-desc">Issues to resolve before any operational trial.</div>
+            </div>
+          </div>
+          <div id="riskTable"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Proposed evaluation criteria</h3>
+              <div class="card-desc">Set acceptance thresholds before collecting participant data.</div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="successThreshold">Target unaided task success (%)</label>
+            <input type="number" id="successThreshold" value="85" min="1" max="100">
+          </div>
+          <div class="field">
+            <label for="timeThreshold">Target median task completion time (seconds)</label>
+            <input type="number" id="timeThreshold" value="60" min="1" max="600">
+          </div>
+          <div class="info-box">
+            <h4>How to interpret these targets</h4>
+            <p>These are editable proposed thresholds, not achieved results or universal usability standards. Review them against the risk of each task, participant needs, and the study protocol before testing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const taskData = {
+  gate: {
+    title: "Find your new departure gate",
+    detail: "Your flight AX204 has moved from Gate A12 to Gate A16. Follow the blue route to A16, then confirm the gate on the official airport displays.",
+    route: "M 138 103 L 138 164 L 380 164 L 380 103",
+    destination: [380, 103],
+    description: "Suggested route to Gate A16. Follow airport signage and confirm the gate on official displays.",
+    criteria: "Participant identifies A16 as the new gate without assistance.",
+    icon: "↗"
+  },
+  baggage: {
+    title: "Find the correct baggage carousel",
+    detail: "Example arrival information indicates Carousel 3. Follow the route to the baggage reclaim area and verify the carousel using official airport displays.",
+    route: "M 310 164 L 310 191 L 159 191 L 159 228",
+    destination: [159, 228],
+    description: "Suggested route to Carousel 3. The terminal layout and carousel assignment are illustrative.",
+    criteria: "Participant identifies Carousel 3 and knows to verify it against official information.",
+    icon: "▣"
+  },
+  tag: {
+    title: "Understand your luggage tag",
+    detail: "A checked-baggage tag links a bag to airline handling and routing records. Keep the baggage receipt or tag number in case you need to ask the airline to trace your bag.",
+    route: "",
+    destination: null,
+    description: "Luggage-tag guidance selected. No physical destination is needed for this task.",
+    criteria: "Participant explains the tag's identification purpose and why the receipt is useful.",
+    icon: "⌁"
+  },
+  help: {
+    title: "Locate the appropriate help point",
+    detail: "The schematic map marks an assistance point near the main walkway. In a real terminal, confirm that the point offers the type of help you need; request staff assistance if necessary.",
+    route: "M 310 164 L 310 228",
+    destination: [318, 228],
+    description: "Suggested route to the marked help point. This does not confirm the availability of staff or services.",
+    criteria: "Participant finds the help point and identifies how to request assistance.",
+    icon: "＋"
+  }
+};
+
+let selectedTask = null;
+let taskStartedAt = null;
+let currentTaskStarted = false;
+let completedTasks = new Set();
+let attempts = [];
+let feedbackItems = [];
+let carouselUnavailable = false;
+let toastTimer;
+
+function toast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+}
+
+// Navigation between app screens
+document.querySelectorAll(".nav[data-page]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    $(btn.dataset.page).classList.add("active");
+
+    const titles = {
+      passenger: ["Your airport, made clearer.", "A passenger-facing prototype for directions, baggage information and assistance."],
+      testing: ["Test the passenger experience.", "A proposed method for evaluating task success, comprehension and usability."],
+      feasibility: ["Plan for responsible deployment.", "Review data dependencies, accessibility, privacy and operational approvals."]
+    };
+    $("pageTitle").textContent = titles[btn.dataset.page][0];
+    $("pageSubtitle").textContent = titles[btn.dataset.page][1];
+  });
+});
+
+// Task selection and map routes
+function selectTask(key) {
+  selectedTask = key;
+  currentTaskStarted = false;
+  taskStartedAt = null;
+
+  document.querySelectorAll(".task").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.task === key);
+  });
+
+  const task = taskData[key];
+  $("taskInfo").innerHTML = `<h4>${task.title}</h4><p>${task.detail}</p>`;
+  $("routeDescription").textContent = task.description;
+  $("startTask").disabled = false;
+  $("completeTask").disabled = true;
+  $("taskFeedback").textContent = completedTasks.has(key)
+    ? "This task has already been marked understood in this demo. You may repeat it."
+    : "Start the task to record its elapsed time, then mark it understood when you have read and understood the information.";
+
+  const path = $("routePath");
+  const marker = $("mapMarker");
+  if (task.route) {
+    path.setAttribute("d", task.route);
+    path.style.display = "block";
+    marker.style.display = "block";
+    $("markerHalo").setAttribute("cx", task.destination[0]);
+    $("markerHalo").setAttribute("cy", task.destination[1]);
+    $("markerDot").setAttribute("cx", task.destination[0]);
+    $("markerDot").setAttribute("cy", task.destination[1]);
+  } else {
+    path.style.display = "none";
+    marker.style.display = "none";
+  }
+}
+document.querySelectorAll(".task").forEach(btn => {
+  btn.addEventListener("click", () => selectTask(btn.dataset.task));
+});
+
+$("startTask").addEventListener("click", () => {
+  if (!selectedTask) return;
+  taskStartedAt = performance.now();
+  currentTaskStarted = true;
+  $("completeTask").disabled = false;
+  $("startTask").textContent = "Restart timer";
+  $("taskFeedback").textContent = "Timer running. Read the information, then mark the task understood. For formal testing, use a pre-defined success criterion and independent observation.";
+  toast("Task timer started");
+});
+
+$("completeTask").addEventListener("click", () => {
+  if (!selectedTask || !currentTaskStarted) {
+    toast("Start the task timer first");
+    return;
+  }
+  const seconds = (performance.now() - taskStartedAt) / 1000;
+  attempts.push({
+    task: selectedTask,
+    title: taskData[selectedTask].title,
+    seconds,
+    time: new Date().toISOString(),
+    outcome: "Self-marked understood"
+  });
+  completedTasks.add(selectedTask);
+  currentTaskStarted = false;
+  renderEvaluation();
+  renderTaskCount();
+  $("taskFeedback").textContent = `Recorded ${seconds.toFixed(1)} seconds. This is a self-marked demonstration outcome, not an independently assessed success.`;
+  $("completeTask").disabled = true;
+  toast("Interaction recorded");
+});
+
+$("clearTask").addEventListener("click", () => {
+  selectedTask = null;
+  currentTaskStarted = false;
+  taskStartedAt = null;
+  document.querySelectorAll(".task").forEach(b => b.classList.remove("selected"));
+  $("taskInfo").innerHTML = "<h4>Start with a passenger task</h4><p>Select any task above. The prototype will display the relevant information and, where appropriate, a suggested route.</p>";
+  $("routeDescription").textContent = "Choose one of the passenger tasks below to display its destination and route.";
+  $("routePath").style.display = "none";
+  $("mapMarker").style.display = "none";
+  $("startTask").disabled = true;
+  $("completeTask").disabled = true;
+  $("startTask").textContent = "Start task";
+});
+
+function renderTaskCount() {
+  $("taskCount").textContent = `${completedTasks.size} / 4 marked understood`;
+}
+
+function renderEvaluation() {
+  $("sessionCount").textContent = attempts.length ? 1 : 0;
+  $("attemptedMetric").textContent = attempts.length;
+  $("passedMetric").textContent = attempts.length;
+  const avg = attempts.length
+    ? attempts.reduce((sum, a) => sum + a.seconds, 0) / attempts.length
+    : null;
+  $("timeMetric").textContent = avg === null ? "—" : avg.toFixed(1) + "s";
+
+  $("sessionLog").innerHTML = attempts.length ? attempts.map((a, i) => `
+    <div class="result-row">
+      <span><strong>${i + 1}. ${a.title}</strong><br><span class="muted">${new Date(a.time).toLocaleTimeString()}</span></span>
+      <span style="text-align:right"><span class="result-value">${a.seconds.toFixed(1)}s</span><br><span class="muted">Self-marked</span></span>
+    </div>`).join("") : '<p class="small muted">No task interactions recorded yet. Start tasks in the Passenger app to populate this log.</p>';
+}
+
+// Flight information status
+$("infoStatus").addEventListener("change", () => {
+  const unavailable = $("infoStatus").value === "unavailable";
+  $("flightStatus").textContent = unavailable ? "UNAVAILABLE" : "DEMO UPDATE";
+  $("flightStatus").className = unavailable ? "tag offline" : "tag live";
+  $("gateHeadline").textContent = unavailable
+    ? "Gate information is currently unavailable"
+    : "Your departure gate has changed";
+  $("gateMessage").textContent = unavailable
+    ? "We cannot confirm the latest gate assignment. Check official airport displays or contact airline staff before proceeding."
+    : "Flight AX204 · Gate A12 → Gate A16. Please check the airport displays before proceeding.";
+  $("statusExplanation").innerHTML = unavailable
+    ? "<h4>Information unavailable</h4><p>The system should clearly state that it cannot confirm the latest information. It must not present an old gate assignment as current. Direct passengers to official airport displays or airline staff.</p>"
+    : "<h4>Live / verified information</h4><p>The interface presents a timestamp and source status. In a real deployment, the status would depend on an authorised, current data feed.</p>";
+});
+
+$("toggleCarousel").addEventListener("click", () => {
+  carouselUnavailable = !carouselUnavailable;
+  $("carouselStatus").textContent = carouselUnavailable ? "UNAVAILABLE" : "DEMO DATA";
+  $("carouselStatus").className = carouselUnavailable ? "tag offline" : "tag live";
+  $("carouselMessage").textContent = carouselUnavailable
+    ? "Carousel assignment cannot be confirmed. Check official airport displays or ask airline or airport staff."
+    : "Proceed to baggage reclaim and check the official airport screens.";
+  $("toggleCarousel").textContent = carouselUnavailable
+    ? "Restore demonstration data" : "Simulate unavailable data";
+});
+
+$("findHelp").addEventListener("click", () => {
+  document.querySelector('[data-page="passenger"]').click();
+  selectTask("help");
+});
+
+// Proposed test protocol
+const protocol = [
+  ["gate", "Find a changed departure gate", "Correctly identify the new gate and explain where to verify it."],
+  ["baggage", "Identify a baggage carousel", "Select the assigned carousel and recognise the need to verify it."],
+  ["tag", "Explain a luggage tag", "Describe baggage identification and the purpose of retaining the receipt."],
+  ["help", "Locate a help point", "Find the point and describe how to obtain suitable assistance."]
+];
+
+$("protocolList").innerHTML = protocol.map((p, i) => `
+  <div class="result-row">
+    <span><strong>${i + 1}. ${p[1]}</strong><br><span class="muted">${p[2]}</span></span>
+    <span class="tag">Proposed</span>
+  </div>`).join("");
+
+const questions = [
+  "Did you understand the notification on the first reading?",
+  "Could you tell whether information was verified or unavailable?",
+  "Were the map, route and destination labels clear?",
+  "Could you locate the appropriate help point?",
+  "What would you change to make the experience easier?"
+];
+$("questions").innerHTML = questions.map((q, i) => `
+  <div class="field">
+    <label>${i + 1}. ${q}</label>
+    <select>
+      <option value="">Select response</option>
+      <option>Yes / clear</option>
+      <option>Partly / needed more time</option>
+      <option>No / unclear</option>
+      <option>Not applicable</option>
+    </select>
+  </div>`).join("");
+
+$("saveFeedback").addEventListener("click", () => {
+  const value = $("feedbackText").value.trim();
+  if (!value) {
+    toast("Enter an observation first");
+    return;
+  }
+  feedbackItems.push({
+    text: value,
+    task: $("feedbackTask").value,
+    time: new Date().toISOString()
+  });
+  $("feedbackText").value = "";
+  $("feedbackLog").innerHTML = feedbackItems.map((f, i) =>
+    `<div class="result-row"><span><strong>${f.task}</strong><br>${escapeHtml(f.text)}</span><span class="muted">${i + 1}</span></div>`
+  ).join("");
+  toast("Observation saved in this page session");
+});
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+$("exportCsv").addEventListener("click", () => {
+  if (!attempts.length && !feedbackItems.length) {
+    toast("There are no records to export yet");
+    return;
+  }
+  const rows = [["Record type", "Task", "Outcome / observation", "Time seconds", "Timestamp"]];
+  attempts.forEach(a => rows.push([
+    "Prototype interaction", a.title, a.outcome, a.seconds.toFixed(2), a.time
+  ]));
+  feedbackItems.forEach(f => rows.push([
+    "Qualitative observation", f.task, f.text, "", f.time
+  ]));
+  const csv = rows.map(row => row.map(v =>
+    '"' + String(v).replace(/"/g, '""') + '"'
+  ).join(",")).join("\r\n");
+  const blob = new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "airport-anchor-demo-records.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Feasibility review
+const feasibility = [
+  ["Authorised airport data", "Gate changes, flight status and baggage assignments require an approved data source, clear update timestamps and a defined failure state.", "Critical dependency"],
+  ["Accessibility", "Evaluate readable text, colour contrast, screen-reader labels, touch targets, step-free routes and alternative assistance methods with diverse users.", "User testing required"],
+  ["Privacy and security", "Minimise personal data, avoid exposing booking or baggage identifiers, define retention periods, restrict access and obtain appropriate consent.", "Design requirement"],
+  ["Airport approvals", "Confirm permission for any terminal mapping, on-site testing, signs, integrations or use of airport operational information.", "Approval required"],
+  ["Technical integration", "Assess authorised APIs, data reliability, connectivity, map accuracy, latency and graceful handling of stale or unavailable information.", "Feasibility study"],
+  ["Operational support", "Agree who owns data accuracy, how incidents are escalated and how passengers reach staff when digital assistance fails.", "Operating model needed"]
+];
+
+$("feasibilityItems").innerHTML = feasibility.map((f, i) => `
+  <div class="result-row" style="align-items:flex-start">
+    <span style="flex:1"><strong>${i + 1}. ${f[0]}</strong><br><span class="muted">${f[1]}</span></span>
+    <span class="tag">${f[2]}</span>
+  </div>`).join("");
+
+const risks = [
+  ["Outdated gate or carousel", "Misleading directions", "Show source, timestamp and unavailable state; direct passengers to official displays."],
+  ["Poor accessibility", "Some passengers cannot use the interface", "Test with varied access needs; provide non-digital help and accessible alternatives."],
+  ["Personal data exposure", "Privacy or security incident", "Minimise collection, limit retention and use approved access controls."],
+  ["Unapproved integration", "Deployment delayed or prohibited", "Obtain written approvals and validate data access before operational testing."],
+  ["Map mismatch", "Passenger takes an incorrect route", "Validate maps with the airport and provide clear signage cross-checks."]
+];
+
+$("riskTable").innerHTML = risks.map(r => `
+  <div class="result-row" style="align-items:flex-start">
+    <span style="flex:1"><strong>${r[0]}</strong><br><span class="muted">${r[1]}</span><br><span class="small">${r[2]}</span></span>
+  </div>`).join("");
+
+// Reset all local demonstration records
+$("resetAll").addEventListener("click", () => {
+  attempts = [];
+  feedbackItems = [];
+  completedTasks.clear();
+  selectedTask = null;
+  currentTaskStarted = false;
+  taskStartedAt = null;
+  carouselUnavailable = false;
+
+  $("infoStatus").value = "live";
+  $("flightStatus").textContent = "DEMO UPDATE";
+  $("flightStatus").className = "tag live";
+  $("gateHeadline").textContent = "Your departure gate has changed";
+  $("gateMessage").textContent = "Flight AX204 · Gate A12 → Gate A16. Please check the airport displays before proceeding.";
+  $("statusExplanation").innerHTML = "<h4>Live / verified information</h4><p>The interface presents a timestamp and source status. In a real deployment, the status would depend on an authorised, current data feed.</p>";
+  $("carouselStatus").textContent = "DEMO DATA";
+  $("carouselStatus").className = "tag live";
+  $("carouselMessage").textContent = "Proceed to baggage reclaim and check the official airport screens.";
+  $("toggleCarousel").textContent = "Simulate unavailable data";
+  $("feedbackLog").textContent = "No observations recorded.";
+  $("clearTask").click();
+  renderEvaluation();
+  renderTaskCount();
+  toast("Demo session reset");
+});
+
+// Initial state
+renderEvaluation();
+renderTaskCount();
+</script>
+</body>
+</html>
